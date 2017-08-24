@@ -19,7 +19,14 @@ namespace _24_8_17_Server
         static void Main(string[] args)
         {
             Program server = new Program();
+
+            //using Sockets
+
             server.Run(IPAddress.Loopback, 5000);
+
+            //using Tcp
+
+            //server.Run();
         }
 
         private void Run(IPAddress ip, int port)
@@ -63,6 +70,8 @@ namespace _24_8_17_Server
 
         private void ConnectClients()
         {
+            //using Sockets
+
             Console.WriteLine("Waiting for incoming client connections...");
             HandleClient clientHandler;
             while (true)
@@ -72,6 +81,8 @@ namespace _24_8_17_Server
                 clientList.Add(new Thread(new ThreadStart(clientHandler.Echo)));
                 clientList[clientList.Count - 1].Start();
             }
+
+            //using Tcp
 
             //Console.WriteLine("Waiting for incoming client connections...");
             //HandleClient clientHandler;

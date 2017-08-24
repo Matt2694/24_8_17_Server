@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace _24_8_17_Server
 {
-    class HandleClient
+    internal class HandleClient
     {
         private TcpClient client;
         private Socket clSock;
@@ -28,6 +28,8 @@ namespace _24_8_17_Server
 
         public void Echo()
         {
+            //using Sockets
+
             try
             {
                 IPEndPoint remoteIPEndPoint = clSock.RemoteEndPoint as IPEndPoint;
@@ -48,14 +50,23 @@ namespace _24_8_17_Server
                 Console.WriteLine(e.Message);
             }
 
-            //reader = new StreamReader(client.GetStream());
-            //writer = new StreamWriter(client.GetStream());
-            //writer.AutoFlush = true;
+            //using Tcp
 
-            //while (true)
+            //try
             //{
-            //    string msg = reader.ReadLine();
-            //    writer.WriteLine(msg);
+            //    reader = new StreamReader(client.GetStream());
+            //    writer = new StreamWriter(client.GetStream());
+            //    writer.AutoFlush = true;
+
+            //    while (true)
+            //    {
+            //        string msg = reader.ReadLine();
+            //        writer.WriteLine(msg);
+            //    }
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine(e.Message);
             //}
         }
     }
