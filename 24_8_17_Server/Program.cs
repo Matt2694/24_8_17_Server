@@ -39,29 +39,6 @@ namespace _24_8_17_Server
             ConnectClients();
         }
 
-        private void Communicate(Socket clSock)
-        {
-            try
-            {
-                IPEndPoint remoteIPEndPoint = clSock.RemoteEndPoint as IPEndPoint;
-                IPEndPoint localIPEndPoint = clSock.LocalEndPoint as IPEndPoint;
-
-                byte[] buffer = new byte[1024];
-                while (clSock.Receive(buffer) > 0)
-                {
-                    string str = Encoding.ASCII.GetString(buffer);
-                    byte[] msg = Encoding.ASCII.GetBytes(str);
-                    clSock.Send(msg);
-                }
-                clSock.Shutdown(SocketShutdown.Both);
-                clSock.Close();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
-
         private void Run()
         {
             try
@@ -103,56 +80,6 @@ namespace _24_8_17_Server
             //    clientHandler = new HandleClient(listener.AcceptTcpClient());
             //    clientList.Add(new Thread(new ThreadStart(clientHandler.Echo)));
             //    clientList[clientList.Count - 1].Start();
-            //}
-        }
-    }
-    class HandleClient
-    {
-        private TcpClient client;
-        private Socket clSock;
-        private StreamReader reader = null;
-        private StreamWriter writer = null;
-
-        public HandleClient(TcpClient newClient)
-        {
-            client = newClient;
-        }
-
-        public HandleClient(Socket newSocket)
-        {
-            clSock = newSocket;
-        }
-
-        public void Echo()
-        {
-            try
-            {
-                IPEndPoint remoteIPEndPoint = clSock.RemoteEndPoint as IPEndPoint;
-                IPEndPoint localIPEndPoint = clSock.LocalEndPoint as IPEndPoint;
-
-                byte[] buffer = new byte[1024];
-                while (clSock.Receive(buffer) > 0)
-                {
-                    string str = Encoding.ASCII.GetString(buffer);
-                    byte[] msg = Encoding.ASCII.GetBytes(str);
-                    clSock.Send(msg);
-                }
-                clSock.Shutdown(SocketShutdown.Both);
-                clSock.Close();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-
-            //reader = new StreamReader(client.GetStream());
-            //writer = new StreamWriter(client.GetStream());
-            //writer.AutoFlush = true;
-
-            //while (true)
-            //{
-            //    string msg = reader.ReadLine();
-            //    writer.WriteLine(msg);
             //}
         }
     }
