@@ -6,19 +6,60 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Net;
 using System.IO;
+using System.Threading;
 
 namespace _24_8_17_Server
 {
     class Program
     {
-        private static TcpListener listener = null;
-        private static StreamReader reader = null;
-        private static StreamWriter writer = null;
+        private TcpListener listener = null;
+        Socket s = null;
+        private List<Thread> clientList = new List<Thread>();
 
         static void Main(string[] args)
         {
             Program server = new Program();
-            server.Run();
+            server.Run(IPAddress.Loopback, 5000);
+        }
+
+        private void Run(IPAddress ip, int port)
+        {
+            try
+            {
+                s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                s.Bind(new IPEndPoint(ip, port));
+                s.Listen(10);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return;
+            }
+            Console.WriteLine("ready");
+            ConnectClients();
+        }
+
+        private void Communicate(Socket clSock)
+        {
+            try
+            {
+                IPEndPoint remoteIPEndPoint = clSock.RemoteEndPoint as IPEndPoint;
+                IPEndPoint localIPEndPoint = clSock.LocalEndPoint as IPEndPoint;
+
+                byte[] buffer = new byte[1024];
+                while (clSock.Receive(buffer) > 0)
+                {
+                    string str = Encoding.ASCII.GetString(buffer);
+                    byte[] msg = Encoding.ASCII.GetBytes(str);
+                    clSock.Send(msg);
+                }
+                clSock.Shutdown(SocketShutdown.Both);
+                clSock.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         private void Run()
@@ -28,10 +69,9 @@ namespace _24_8_17_Server
                 listener = new TcpListener(5000);
                 listener.Start();
                 Console.WriteLine("Ready");
-
-                HandleClient(listener.AcceptTcpClient());
+                ConnectClients();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
@@ -44,17 +84,76 @@ namespace _24_8_17_Server
             }
         }
 
-        private void HandleClient(TcpClient tcpClient)
+        private void ConnectClients()
         {
-            reader = new StreamReader(tcpClient.GetStream());
-            writer = new StreamWriter(tcpClient.GetStream());
-
+            Console.WriteLine("Waiting for incoming client connections...");
+            HandleClient clientHandler;
             while (true)
             {
-                string msg = reader.ReadLine();
-                writer.WriteLine(msg);
-                writer.Flush();
+                Socket newSocket = s.Accept();
+                clientHandler = new HandleClient(newSocket);
+                clientList.Add(new Thread(new ThreadStart(clientHandler.Echo)));
+                clientList[clientList.Count - 1].Start();
             }
+
+            //Console.WriteLine("Waiting for incoming client connections...");
+            //HandleClient clientHandler;
+            //while (true)
+            //{
+            //    clientHandler = new HandleClient(listener.AcceptTcpClient());
+            //    clientList.Add(new Thread(new ThreadStart(clientHandler.Echo)));
+            //    clientList[clientList.Count - 1].Start();
+            //}
+        }
+    }
+    class HandleClient
+    {
+        private TcpClient client;
+        private Socket clSock;
+        private StreamReader reader = null;
+        private StreamWriter writer = null;
+
+        public HandleClient(TcpClient newClient)
+        {
+            client = newClient;
+        }
+
+        public HandleClient(Socket newSocket)
+        {
+            clSock = newSocket;
+        }
+
+        public void Echo()
+        {
+            try
+            {
+                IPEndPoint remoteIPEndPoint = clSock.RemoteEndPoint as IPEndPoint;
+                IPEndPoint localIPEndPoint = clSock.LocalEndPoint as IPEndPoint;
+
+                byte[] buffer = new byte[1024];
+                while (clSock.Receive(buffer) > 0)
+                {
+                    string str = Encoding.ASCII.GetString(buffer);
+                    byte[] msg = Encoding.ASCII.GetBytes(str);
+                    clSock.Send(msg);
+                }
+                clSock.Shutdown(SocketShutdown.Both);
+                clSock.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            //reader = new StreamReader(client.GetStream());
+            //writer = new StreamWriter(client.GetStream());
+            //writer.AutoFlush = true;
+
+            //while (true)
+            //{
+            //    string msg = reader.ReadLine();
+            //    writer.WriteLine(msg);
+            //}
         }
     }
 }
